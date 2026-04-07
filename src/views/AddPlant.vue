@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-neutral-light pb-20">
-    <GlassNav />
+    <GlassNav :notificationCount="0" />
 
     <main class="page-container py-6">
       <div class="flex items-center mb-6 slide-up">
@@ -18,7 +18,7 @@
             </n-form-item>
 
             <n-form-item label="植物种类" path="type">
-              <n-select v-model:value="formValue.type" :options="plantTypeOptions" placeholder="选择种类" />
+              <n-select v-model:value="formValue.type" :options="plantTypeOptions as any" placeholder="选择种类" />
             </n-form-item>
 
             <n-form-item label="浇水周期（天）" path="wateringCycle">
@@ -26,7 +26,7 @@
             </n-form-item>
 
             <n-form-item label="光照需求" path="lightRequirement">
-              <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions" />
+              <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions as any" />
             </n-form-item>
 
             <n-form-item label="植物照片">

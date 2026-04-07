@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-neutral-light pb-20">
-    <GlassNav />
+    <GlassNav :notification-count="0" />
 
     <main class="page-container py-6">
       <div class="flex items-center mb-6 slide-up">

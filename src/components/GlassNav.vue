@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  notificationCount?: number
+  notificationCount: number
 }>()
 
 defineEmits(['notification', 'settings'])

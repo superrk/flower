@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-neutral-light pb-20">
-    <GlassNav />
+    <GlassNav :notificationCount="0" />
 
     <main class="page-container py-6">
       <div v-if="!plant" class="text-center py-8">
@@ -81,13 +81,13 @@
                   <n-input v-model:value="formValue.name" placeholder="请输入植物名称" />
                 </n-form-item>
                 <n-form-item label="植物种类">
-                  <n-select v-model:value="formValue.type" :options="plantTypeOptions" placeholder="选择种类" />
+                  <n-select v-model:value="formValue.type" :options="plantTypeOptions as any" placeholder="选择种类" />
                 </n-form-item>
                 <n-form-item label="浇水周期（天）">
                   <n-input-number v-model:value="formValue.wateringCycle" :min="1" :max="30" />
                 </n-form-item>
                 <n-form-item label="光照需求">
-                  <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions" />
+                  <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions as any" placeholder="选择光照需求" />
                 </n-form-item>
                 <n-form-item label="备注">
                   <n-input v-model:value="formValue.notes" type="textarea" placeholder="添加备注..." />

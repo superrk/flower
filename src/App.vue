@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NConfigProvider, type GlobalThemeOverrides } from 'naive-ui'
-import { darkTheme, lightTheme } from 'naive-ui'
+import {lightTheme } from 'naive-ui'
 
 const themeConfig = computed(() => lightTheme)
 

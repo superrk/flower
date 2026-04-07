@@ -175,14 +175,12 @@ import BottomNav from '@/components/BottomNav.vue'
 import PlantCard from '@/components/PlantCard.vue'
 import SuggestionCard from '@/components/SuggestionCard.vue'
 import { usePlantsStore } from '@/stores/plants'
-import { useRecordsStore } from '@/stores/records'
 import type { Plant } from '@/types'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const router = useRouter()
 const plantsStore = usePlantsStore()
-const recordsStore = useRecordsStore()
 
 const viewMode = ref<'grid' | 'list'>('grid')
 const searchQuery = ref('')
