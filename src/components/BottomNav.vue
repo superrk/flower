@@ -25,9 +25,9 @@ const router = useRouter()
 const route = useRoute()
 
 const navItems = [
-  { name: 'home', label: '首页', icon: 'fa fa-home', path: '/' },
-  { name: 'calendar', label: '日历', icon: 'fa fa-calendar', path: '/statistics' },
-  { name: 'add', label: '添加', icon: 'fa fa-plus-circle', path: '/add' }
+  { name: 'home', label: '首页', icon: 'fa fa-home', path: '/flower' },
+  { name: 'calendar', label: '日历', icon: 'fa fa-calendar', path: '/flower/statistics' },
+  { name: 'add', label: '添加', icon: 'fa fa-plus-circle', path: '/flower/add' }
 ]
 
 const activeRoute = computed(() => route.name as string)
