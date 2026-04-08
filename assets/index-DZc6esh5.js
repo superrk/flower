@@ -1,0 +1,1 @@
+const e=[{label:"观叶植物",type:"leaf",value:"leaf"},{label:"观花植物",type:"flower",value:"flower"},{label:"多肉植物",type:"succulent",value:"succulent"},{label:"果实植物",type:"fruit",value:"fruit"},{label:"香草植物",type:"herb",value:"herb"}],l=[{label:"低光照 (散射光)",value:"low"},{label:"中等光照",value:"medium"},{label:"高光照 (充足阳光)",value:"high"}];export{l as L,e as P};
