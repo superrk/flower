@@ -4,27 +4,27 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: '/',
+      path: '/flower/',
       name: 'home',
       component: () => import('@/views/HomeView.vue')
     },
     {
-      path: '/plant/:id',
+      path: '/flower/plant/:id',
       name: 'plant-detail',
       component: () => import('@/views/PlantDetail.vue')
     },
     {
-      path: '/add',
+      path: '/flower/add',
       name: 'add-plant',
       component: () => import('@/views/AddPlant.vue')
     },
     {
-      path: '/edit/:id',
+      path: '/flower/edit/:id',
       name: 'edit-plant',
       component: () => import('@/views/AddPlant.vue')
     },
     {
-      path: '/statistics',
+      path: '/flower/statistics',
       name: 'statistics',
       component: () => import('@/views/Statistics.vue')
     }
