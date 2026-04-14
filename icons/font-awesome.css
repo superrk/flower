@@ -1,0 +1,108 @@
+/* 本地图标样式 - 替代 Font Awesome */
+
+/* 基础图标样式 */
+.fa {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  stroke-width: 0;
+  stroke: currentColor;
+  fill: currentColor;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* 常用图标定义 */
+.fa-leaf::before {
+  content: "🍃";
+}
+
+.fa-bell-o::before {
+  content: "🔔";
+}
+
+.fa-cog::before {
+  content: "⚙️";
+}
+
+.fa-home::before {
+  content: "🏠";
+}
+
+.fa-calendar::before {
+  content: "📅";
+}
+
+.fa-plus-circle::before {
+  content: "➕";
+}
+
+.fa-user::before {
+  content: "👤";
+}
+
+.fa-th-large::before {
+  content: "⬛";
+}
+
+.fa-list::before {
+  content: "📋";
+}
+
+.fa-search::before {
+  content: "🔍";
+}
+
+.fa-chevron-right::before {
+  content: "▶️";
+}
+
+.fa-pagelines::before {
+  content: "🌿";
+}
+
+.fa-tree::before {
+  content: "🌳";
+}
+
+.fa-tint::before {
+  content: "💧";
+}
+
+.fa-sun-o::before {
+  content: "☀️";
+}
+
+.fa-ellipsis-v::before {
+  content: "⋮";
+}
+
+.fa-camera::before {
+  content: "📷";
+}
+
+.fa-times::before {
+  content: "✕";
+}
+
+.fa-pencil::before {
+  content: "✏️";
+}
+
+.fa-trash::before {
+  content: "🗑️";
+}
+
+.fa-plus::before {
+  content: "➕";
+}
+
+.fa-ellipsis-h::before {
+  content: "⋯";
+}
+
+.fa-heartbeat::before {
+  content: "❤️";
+}
