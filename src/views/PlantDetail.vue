@@ -48,7 +48,7 @@
                 <div class="text-lg font-bold">{{ formatDate(plant.nextWatering) }}</div>
                 <div class="text-sm text-gray-600">{{ wateringText }}</div>
               </div>
-              <n-button type="primary" @click="handleWater">立即浇水</n-button>
+              <n-button type="primary" @click="showAddRecordModal = true">添加记录</n-button>
             </div>
           </div>
         </div>
@@ -56,19 +56,35 @@
         <n-tabs v-model:value="activeTab" type="line" class="mt-4">
           <n-tab-pane name="records" tab="养护记录">
             <div class="space-y-3 mt-4">
-              <div v-for="record in records" :key="record.id" class="bg-white rounded-lg p-3 card-shadow">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="font-medium">{{ formatDate(record.date) }}</span>
-                  <span :class="getHealthClass(record.healthScore)" class="text-xs px-2 py-1 rounded-full">
-                    健康度 {{ record.healthScore }}/10
-                  </span>
+              <div v-for="record in recordsWithImages" :key="record.id" class="bg-white rounded-lg p-3 card-shadow">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-2">
+                    <i :class="[getRecordTypeIcon(record.type), getRecordTypeColor(record.type)]"></i>
+                    <span class="font-medium">{{ formatDate(record.date) }}</span>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span :class="getHealthClass(record.healthScore)" class="text-xs px-2 py-1 rounded-full">
+                      {{ record.healthScore }}/10
+                    </span>
+                    <button @click="handleEditRecord(record)" class="text-gray-400 hover:text-primary p-1">
+                      <i class="fa fa-pencil text-sm"></i>
+                    </button>
+                    <button @click="handleDeleteRecord(record.id)" class="text-gray-400 hover:text-red-500 p-1">
+                      <i class="fa fa-trash text-sm"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="text-sm text-gray-600">
-                  <span v-if="record.watered"><i class="fa fa-tint text-blue-500 mr-1"></i>已浇水</span>
-                  <span v-if="record.notes"> | {{ record.notes }}</span>
+                <div v-if="record.notes" class="text-sm text-gray-600 mb-2">{{ record.notes }}</div>
+                <div v-if="record.images && record.images.length > 0" class="flex space-x-2 overflow-x-auto">
+                  <img
+                    v-for="(img, idx) in record.images"
+                    :key="idx"
+                    :src="img"
+                    class="w-16 h-16 rounded-lg object-cover shrink-0"
+                  />
                 </div>
               </div>
-              <div v-if="records.length === 0" class="text-center text-gray-500 py-4">
+              <div v-if="records.length === 0" class="text-center text-gray-500 py-8">
                 暂无养护记录
               </div>
             </div>
@@ -81,20 +97,20 @@
                   <n-input v-model:value="formValue.name" placeholder="请输入植物名称" />
                 </n-form-item>
                 <n-form-item label="植物种类">
-                  <n-select v-model:value="formValue.type" :options="plantTypeOptions as any" placeholder="选择种类" />
+                  <n-select v-model:value="formValue.type" :options="plantTypeOptions" placeholder="选择种类" />
                 </n-form-item>
                 <n-form-item label="浇水周期（天）">
                   <n-input-number v-model:value="formValue.wateringCycle" :min="1" :max="30" />
                 </n-form-item>
                 <n-form-item label="光照需求">
-                  <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions as any" placeholder="选择光照需求" />
+                  <n-select v-model:value="formValue.lightRequirement" :options="lightLevelOptions" placeholder="选择光照需求" />
                 </n-form-item>
                 <n-form-item label="备注">
                   <n-input v-model:value="formValue.notes" type="textarea" placeholder="添加备注..." />
                 </n-form-item>
               </n-form>
 
-              <div class="flex">
+              <div class="flex space-x-3">
                 <n-button type="primary" class="flex-1" @click="handleSave">保存修改</n-button>
                 <n-button type="error" class="flex-1" @click="handleDelete">删除</n-button>
               </div>
@@ -105,33 +121,27 @@
     </main>
 
     <BottomNav />
+
+    <RecordFormModal
+      v-model:visible="showAddRecordModal"
+      :plantId="plantId"
+      :editRecord="editingRecord"
+      @success="handleRecordSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js'
 import { NButton, NTabs, NTabPane, NForm, NFormItem, NInput, NInputNumber, NSelect, useMessage, useDialog } from 'naive-ui'
 import GlassNav from '@/components/GlassNav.vue'
 import BottomNav from '@/components/BottomNav.vue'
+import RecordFormModal from '@/components/RecordFormModal.vue'
 import { usePlantsStore } from '@/stores/plants'
 import { useRecordsStore } from '@/stores/records'
 import { getImage } from '@/composables/useIndexedDB'
-import { PLANT_TYPES, LIGHT_LEVELS } from '@/types'
-import type { Plant } from '@/types'
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
+import { PLANT_TYPES, LIGHT_LEVELS, RECORD_TYPES, type Plant, type CareRecord, type RecordType } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -145,6 +155,9 @@ const plant = computed(() => plantsStore.getPlantById(plantId.value))
 const records = computed(() => recordsStore.getRecentRecords(plantId.value, 10))
 const plantPhoto = ref<string | null>(null)
 const activeTab = ref('records')
+const showAddRecordModal = ref(false)
+const editingRecord = ref<CareRecord | null>(null)
+const recordsWithImages = ref<(CareRecord & { images: string[] })[]>([])
 
 const formValue = reactive({
   name: '',
@@ -154,8 +167,8 @@ const formValue = reactive({
   notes: ''
 })
 
-const plantTypeOptions = PLANT_TYPES
-const lightLevelOptions = LIGHT_LEVELS
+const plantTypeOptions = PLANT_TYPES.map(pt => ({ label: pt.label, value: pt.type }))
+const lightLevelOptions = LIGHT_LEVELS.map(ll => ({ label: ll.label, value: ll.value }))
 
 const healthBadgeClass = computed(() => {
   if (!plant.value) return ''
@@ -203,18 +216,66 @@ function getHealthClass(score: number) {
   return 'bg-red-100 text-red-800'
 }
 
-function handleWater() {
-  if (!plant.value) return
-  plantsStore.waterPlant(plant.value.id)
-  recordsStore.addRecord({
-    plantId: plant.value.id,
-    date: new Date().toISOString().split('T')[0],
-    watered: true,
-    healthScore: 7,
-    lightLevel: 50,
-    notes: '浇水养护'
+function getRecordTypeIcon(type: RecordType) {
+  const rt = RECORD_TYPES.find(r => r.value === type)
+  return rt ? `fa ${rt.icon}` : 'fa fa-ellipsis-h'
+}
+
+function getRecordTypeColor(type: RecordType) {
+  if (type === 'watering') return 'text-blue-500'
+  if (type === 'fertilizing') return 'text-green-500'
+  if (type === 'transplanting') return 'text-amber-700'
+  return 'text-gray-500'
+}
+
+async function loadRecordsWithImages() {
+  const result: (CareRecord & { images: string[] })[] = []
+  for (const record of records.value) {
+    const images: string[] = []
+    for (const key of record.images || []) {
+      const img = await getImage(key)
+      if (img) images.push(img)
+    }
+    result.push({ ...record, images })
+  }
+  recordsWithImages.value = result
+}
+
+function handleEditRecord(record: CareRecord & { images: string[] }) {
+  editingRecord.value = record
+  showAddRecordModal.value = true
+}
+
+function handleDeleteRecord(recordId: string) {
+  dialog.warning({
+    title: '确认删除',
+    content: '确定要删除这条养护记录吗？',
+    positiveText: '删除',
+    negativeText: '取消',
+    onPositiveClick: async () => {
+      await recordsStore.deleteRecord(recordId)
+      await loadRecordsWithImages()
+      message.success('记录已删除')
+    }
   })
-  message.success('浇水成功！')
+}
+
+async function handleRecordSuccess(data: any) {
+  if (editingRecord.value) {
+    recordsStore.updateRecord(editingRecord.value.id, data)
+  } else {
+    recordsStore.addRecord({
+      plantId: plantId.value,
+      type: data.type,
+      watered: data.type === 'watering',
+      healthScore: data.healthScore,
+      lightLevel: data.lightLevel,
+      notes: data.notes,
+      images: data.images
+    })
+  }
+  editingRecord.value = null
+  await loadRecordsWithImages()
 }
 
 function handleSave() {
@@ -249,6 +310,12 @@ function goBack() {
   router.push({ name: 'home' })
 }
 
+watch(showAddRecordModal, (val) => {
+  if (!val) {
+    editingRecord.value = null
+  }
+})
+
 onMounted(async () => {
   if (plant.value) {
     formValue.name = plant.value.name
@@ -261,5 +328,6 @@ onMounted(async () => {
       plantPhoto.value = await getImage(plant.value.photoKey) || null
     }
   }
+  await loadRecordsWithImages()
 })
 </script>

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { CareRecord } from '@/types'
+import type { CareRecord, RecordType } from '@/types'
 import { setItem, getItem, generateId } from '@/composables/useStorage'
+import { deleteImages } from '@/composables/useIndexedDB'
 
 const RECORDS_KEY = 'care-records'
 
@@ -12,14 +13,53 @@ export const useRecordsStore = defineStore('records', () => {
     setItem(RECORDS_KEY, records.value)
   }
 
-  function addRecord(recordData: Omit<CareRecord, 'id'>): CareRecord {
+  function addRecord(recordData: {
+    plantId: string
+    type: RecordType
+    watered: boolean
+    healthScore: number
+    lightLevel: number
+    notes: string
+    images: string[]
+  }): CareRecord {
+    const now = new Date().toISOString()
     const record: CareRecord = {
       ...recordData,
-      id: generateId()
+      id: generateId(),
+      date: now.split('T')[0],
+      createdAt: now,
+      updatedAt: now
     }
     records.value.unshift(record)
     saveToStorage()
     return record
+  }
+
+  function updateRecord(id: string, updates: Partial<Omit<CareRecord, 'id' | 'createdAt'>>): boolean {
+    const index = records.value.findIndex(r => r.id === id)
+    if (index === -1) return false
+
+    records.value[index] = {
+      ...records.value[index],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    }
+    saveToStorage()
+    return true
+  }
+
+  async function deleteRecord(id: string): Promise<boolean> {
+    const index = records.value.findIndex(r => r.id === id)
+    if (index === -1) return false
+
+    const record = records.value[index]
+    if (record.images && record.images.length > 0) {
+      await deleteImages(record.images)
+    }
+
+    records.value.splice(index, 1)
+    saveToStorage()
+    return true
   }
 
   function getRecordsByPlantId(plantId: string): CareRecord[] {
@@ -30,7 +70,13 @@ export const useRecordsStore = defineStore('records', () => {
     return getRecordsByPlantId(plantId).slice(0, limit)
   }
 
-  function deleteRecordsByPlantId(plantId: string): void {
+  async function deleteRecordsByPlantId(plantId: string): Promise<void> {
+    const plantRecords = getRecordsByPlantId(plantId)
+    for (const record of plantRecords) {
+      if (record.images && record.images.length > 0) {
+        await deleteImages(record.images)
+      }
+    }
     records.value = records.value.filter(r => r.plantId !== plantId)
     saveToStorage()
   }
@@ -55,6 +101,8 @@ export const useRecordsStore = defineStore('records', () => {
   return {
     records,
     addRecord,
+    updateRecord,
+    deleteRecord,
     getRecordsByPlantId,
     getRecentRecords,
     deleteRecordsByPlantId,
